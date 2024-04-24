@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
+import 'services/time_zone_service.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(TimezoneTracker());
@@ -10,21 +11,16 @@ class TimezoneTracker extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Timezone Tracker',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomeScreen(),
-      supportedLocales: [
-        const Locale('en', ''), // English, no country code
-      ],
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-    );
+    return MultiProvider(
+        providers: [
+          Provider<TimeZoneService>(
+            create: (_) => TimeZoneService(),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Timezone Tracker',
+          home: HomeScreen(),
+        ));
   }
 }
 
