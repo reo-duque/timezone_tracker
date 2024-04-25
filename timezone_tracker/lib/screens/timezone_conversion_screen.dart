@@ -47,40 +47,40 @@ class _TimezoneConversionScreenState extends State<TimezoneConversionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Timezone Converter'),
+        title: const Text('Timezone Converter'),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             TextFormField(
               readOnly: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'From Timezone',
                 suffixIcon: Icon(Icons.arrow_drop_down),
               ),
               controller: TextEditingController(text: _fromTimezone),
               onTap: () => _showSearch(context, true),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_fromDateTime != null)
               Text('Current date and time: $_fromDateTime'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextFormField(
               readOnly: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'To Timezone',
                 suffixIcon: Icon(Icons.arrow_drop_down),
               ),
               controller: TextEditingController(text: _toTimezone),
               onTap: () => _showSearch(context, false),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_toDateTime != null)
               Text('Current date and time: $_toDateTime'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _updateDateTimes,
-              child: Text('Convert Timezones'),
+              child: const Text('Convert Timezones'),
             ),
           ],
         ),
@@ -125,7 +125,7 @@ class TimeZoneSearch extends SearchDelegate<String> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       IconButton(
-        icon: Icon(Icons.clear),
+        icon: const Icon(Icons.clear),
         onPressed: () {
           query = '';
         },
@@ -136,7 +136,7 @@ class TimeZoneSearch extends SearchDelegate<String> {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.arrow_back),
+      icon: const Icon(Icons.arrow_back),
       onPressed: () {
         close(context, '');
       },

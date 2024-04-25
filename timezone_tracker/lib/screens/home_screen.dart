@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'timezone_conversion_screen.dart';
-import 'timezone_selection_screen.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../animation/animated_clock.dart';
+import 'timezone_conversion_screen.dart';
+import 'timezone_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,11 +15,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> _trackedTimezones = [];
   SharedPreferences? _prefs;
+  bool _showClock = true; // State to control display mode
 
   @override
   void initState() {
     super.initState();
-    tz.initializeTimeZones(); // Ensure timezone data is initialized
+    tz.initializeTimeZones();
     _loadTimezones();
   }
 
@@ -33,12 +35,22 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _toggleClockDisplay() {
+    setState(() {
+      _showClock = !_showClock; // Toggle between true and false
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Timezone Tracker'),
+        title: const Text('Timezone Tracker'),
         actions: <Widget>[
+          IconButton(
+            icon: Icon(_showClock ? Icons.access_time : Icons.list),
+            onPressed: _toggleClockDisplay,
+          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
@@ -68,31 +80,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: GridView.builder(
+        padding: const EdgeInsets.all(10),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1 / 1.5,
+        ),
         itemCount: _trackedTimezones.length,
         itemBuilder: (context, index) {
           String timezone = _trackedTimezones[index];
           tz.Location location = tz.getLocation(timezone);
           tz.TZDateTime now = tz.TZDateTime.now(location);
-          String formattedDate =
-              DateFormat('yyyy-MM-dd HH:mm:ss', 'en_US').format(now);
-          return ListTile(
-            title: Text('$timezone - $formattedDate'),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                _removeTimeZone(index);
-              },
+          return Card(
+            margin: const EdgeInsets.all(8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    timezone,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _showClock
+                      ? AnimatedClock(timezone: timezone)
+                      : Text(
+                          DateFormat('yyyy-MM-dd – HH:mm:ss').format(now),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                  const SizedBox(height: 8)
+                ],
+              ),
             ),
           );
         },
       ),
     );
-  }
-
-  void _removeTimeZone(int index) async {
-    _trackedTimezones.removeAt(index);
-    await _prefs?.setStringList('favoriteTimezones', _trackedTimezones);
-    _updateTrackedTimezones(); // Refresh the list
   }
 }

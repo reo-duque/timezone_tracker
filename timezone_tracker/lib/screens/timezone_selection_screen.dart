@@ -61,20 +61,20 @@ class _TimezoneSelectionScreenState extends State<TimezoneSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Select Favorite Timezones'),
+        title: const Text('Select Favorite Timezones'),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(48.0),
+          preferredSize: const Size.fromHeight(48.0),
           child: TextField(
             decoration: InputDecoration(
               labelText: 'Search Timezones',
               hintText: 'Enter timezone name',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
                 borderSide: BorderSide.none,
               ),
               filled: true,
-              contentPadding: EdgeInsets.all(8),
+              contentPadding: const EdgeInsets.all(8),
             ),
             onChanged: _updateSearchQuery,
           ),
