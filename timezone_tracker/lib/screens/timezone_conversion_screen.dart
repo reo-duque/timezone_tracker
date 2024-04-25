@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart';
 
 class TimezoneConversionScreen extends StatefulWidget {
   @override
@@ -10,18 +10,37 @@ class TimezoneConversionScreen extends StatefulWidget {
 }
 
 class _TimezoneConversionScreenState extends State<TimezoneConversionScreen> {
-  List<String> _timezones = [];
+  List<String> allTimezones = [];
   String? _fromTimezone;
   String? _toTimezone;
+  String? _fromDateTime;
+  String? _toDateTime;
 
   @override
   void initState() {
     super.initState();
-    _timezones = tz.timeZoneDatabase.locations.keys.toList()..sort();
-    if (_timezones.isNotEmpty) {
-      _fromTimezone = _timezones.first;
-      _toTimezone = _timezones.first;
+    tz.initializeTimeZones();
+    allTimezones = tz.timeZoneDatabase.locations.keys.toList()..sort();
+    if (allTimezones.isNotEmpty) {
+      _fromTimezone = allTimezones.first;
+      _toTimezone = allTimezones.first;
+      _updateDateTimes();
     }
+  }
+
+  void _updateDateTimes() {
+    final now = DateTime.now();
+    if (_fromTimezone != null) {
+      final fromTZ = tz.getLocation(_fromTimezone!);
+      _fromDateTime = DateFormat('yyyy-MM-dd HH:mm:ss')
+          .format(tz.TZDateTime.from(now, fromTZ));
+    }
+    if (_toTimezone != null) {
+      final toTZ = tz.getLocation(_toTimezone!);
+      _toDateTime = DateFormat('yyyy-MM-dd HH:mm:ss')
+          .format(tz.TZDateTime.from(now, toTZ));
+    }
+    setState(() {});
   }
 
   @override
@@ -30,68 +49,122 @@ class _TimezoneConversionScreenState extends State<TimezoneConversionScreen> {
       appBar: AppBar(
         title: Text('Timezone Converter'),
       ),
-      body: Column(
-        children: [
-          DropdownButtonFormField<String>(
-            value: _fromTimezone,
-            decoration: InputDecoration(
-              labelText: 'From Timezone',
-              border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            TextFormField(
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'From Timezone',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              controller: TextEditingController(text: _fromTimezone),
+              onTap: () => _showSearch(context, true),
             ),
-            onChanged: (newValue) {
-              setState(() {
-                _fromTimezone = newValue;
-              });
-            },
-            items: _timezones.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-          SizedBox(height: 20),
-          DropdownButtonFormField<String>(
-            value: _toTimezone,
-            decoration: InputDecoration(
-              labelText: 'To Timezone',
-              border: OutlineInputBorder(),
+            SizedBox(height: 10),
+            if (_fromDateTime != null)
+              Text('Current date and time: $_fromDateTime'),
+            SizedBox(height: 20),
+            TextFormField(
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'To Timezone',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              controller: TextEditingController(text: _toTimezone),
+              onTap: () => _showSearch(context, false),
             ),
-            onChanged: (newValue) {
-              setState(() {
-                _toTimezone = newValue;
-              });
-            },
-            items: _timezones.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _convertTime(),
-            child: Text('Convert Time'),
-          ),
-          SizedBox(height: 20),
-          if (_fromTimezone != null && _toTimezone != null)
-            Text(
-                'Time in $_fromTimezone: ${_formatTime(_fromTimezone!)}\nTime in $_toTimezone: ${_formatTime(_toTimezone!)}'),
-        ],
+            SizedBox(height: 10),
+            if (_toDateTime != null)
+              Text('Current date and time: $_toDateTime'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _updateDateTimes,
+              child: Text('Convert Timezones'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  String _formatTime(String timezone) {
-    final location = tz.getLocation(timezone);
-    final now = tz.TZDateTime.now(location);
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+  void _showSearch(BuildContext context, bool isFrom) {
+    showSearch(
+      context: context,
+      delegate: TimeZoneSearch(
+        allTimezones,
+        isFrom ? _updateFromSearch : _updateToSearch,
+      ),
+    );
   }
 
-  void _convertTime() {
+  void _updateFromSearch(String timezone) {
+    Navigator.of(context).pop(); // Close the search
     setState(() {
-      // This function simply triggers a rebuild to update the time display
+      _fromTimezone = timezone;
+      _updateDateTimes();
     });
+  }
+
+  void _updateToSearch(String timezone) {
+    Navigator.of(context).pop(); // Close the search
+    setState(() {
+      _toTimezone = timezone;
+      _updateDateTimes();
+    });
+  }
+}
+
+class TimeZoneSearch extends SearchDelegate<String> {
+  final List<String> timezones;
+  final Function(String) onSelected;
+
+  TimeZoneSearch(this.timezones, this.onSelected);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return buildSuggestions(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    List<String> suggestions = timezones.where((timezone) {
+      return timezone.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(suggestions[index]),
+          onTap: () {
+            onSelected(suggestions[index]);
+            close(context, suggestions[index]);
+          },
+        );
+      },
+    );
   }
 }

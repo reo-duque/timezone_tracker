@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'timezone_conversion_screen.dart';
 import 'timezone_selection_screen.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    tz.initializeTimeZones(); // Ensure timezone data is initialized
     _loadTimezones();
   }
 
@@ -68,10 +71,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView.builder(
         itemCount: _trackedTimezones.length,
         itemBuilder: (context, index) {
+          String timezone = _trackedTimezones[index];
+          tz.Location location = tz.getLocation(timezone);
+          tz.TZDateTime now = tz.TZDateTime.now(location);
+          String formattedDate =
+              DateFormat('yyyy-MM-dd HH:mm:ss', 'en_US').format(now);
           return ListTile(
-            title: Text(_trackedTimezones[index] +
-                " - " +
-                DateFormat('HH:mm:ss', 'en_US').format(DateTime.now())),
+            title: Text('$timezone - $formattedDate'),
             trailing: IconButton(
               icon: Icon(Icons.delete),
               onPressed: () {
