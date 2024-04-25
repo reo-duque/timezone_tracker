@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../animation/animated_clock.dart';
-import 'timezone_conversion_screen.dart';
-import 'timezone_selection_screen.dart';
+import 'timezone_conversion_screen.dart' as ConversionScreen;
+import 'timezone_selection_screen.dart' as SelectionScreen;
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -56,13 +56,15 @@ class _HomeScreenState extends State<HomeScreen> {
               switch (value) {
                 case 'Convert Timezone':
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => TimezoneConversionScreen(),
+                    builder: (context) =>
+                        ConversionScreen.TimezoneConversionScreen(),
                   ));
                   break;
                 case 'Add Timezones':
                   Navigator.of(context)
                       .push(MaterialPageRoute(
-                        builder: (context) => TimezoneSelectionScreen(),
+                        builder: (context) =>
+                            SelectionScreen.TimezoneSelectionScreen(),
                       ))
                       .then(
                           (_) => _updateTrackedTimezones()); // Update on return
