@@ -101,9 +101,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    timezone,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          timezone,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _removeTimeZone(index),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   _showClock
@@ -112,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           DateFormat('yyyy-MM-dd – HH:mm:ss').format(now),
                           style: const TextStyle(fontSize: 16),
                         ),
-                  const SizedBox(height: 8)
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -120,5 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+
+  void _removeTimeZone(int index) async {
+    _trackedTimezones.removeAt(index);
+    await _prefs?.setStringList('favoriteTimezones', _trackedTimezones);
+    _updateTrackedTimezones(); // Refresh the list
   }
 }

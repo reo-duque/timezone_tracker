@@ -8,7 +8,7 @@ import 'package:timezone/data/latest.dart' as tz;
 class AnimatedClock extends StatefulWidget {
   final String timezone;
 
-  AnimatedClock({required this.timezone});
+  const AnimatedClock({required this.timezone});
 
   @override
   _AnimatedClockState createState() => _AnimatedClockState();
@@ -23,7 +23,7 @@ class _AnimatedClockState extends State<AnimatedClock> {
     super.initState();
     tz.initializeTimeZones();
     _currentTime = tz.TZDateTime.now(tz.getLocation(widget.timezone));
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _currentTime = tz.TZDateTime.now(tz.getLocation(widget.timezone));
       });
@@ -43,15 +43,15 @@ class _AnimatedClockState extends State<AnimatedClock> {
       children: [
         CustomPaint(
           painter: ClockPainter(_currentTime),
-          child: Container(
-            width: 120, // Set to a specific size for your clock
+          child: const SizedBox(
+            width: 120,
             height: 120,
           ),
         ),
-        SizedBox(height: 8), // Spacing between the clock and the date
+        const SizedBox(height: 8),
         Text(
-          DateFormat('yyyy-MM-dd').format(_currentTime), // Displaying the date
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          DateFormat('yyyy-MM-dd').format(_currentTime),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ],
     );
